@@ -162,19 +162,6 @@ A quick demo has been provided under demo_det_gb.mov
 
 ---
 
-## Punt Rationale
-
-- **Punt net (4w)** uses final field position instead of raw kick/return fields, so returns, touchbacks, OB, and most penalties are naturally included:  
-  ```
-  net = S + N − 100
-  ```
-  where `S` = yardline_100 at punt, and `N` = yardline_100 on the next snap by the receiving team.  
-  Then take a **shifted 4-week rolling mean** per team to capture recent special-teams performance.
-
-- **Predict-then-Optimize**: arm models predict outcome value **μ̂(x, a)** for each action; the policy (**Greedy** or **LinUCB**) optimizes over these predictions to pick the action.
-
----
-
 ## Minimal Requirements (`requirements.txt`)
 
 ```
