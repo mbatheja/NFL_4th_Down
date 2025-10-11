@@ -1,9 +1,10 @@
 # 4th-Down Decision Calculator
 
 A reproducible pipeline + Streamlit app for **NFL 4th-down decisions**.  
-Additional inverse reinforcement learning analysis on 4th down decisions across the league.
 It builds recent team features from play-by-play, trains a **behavior policy** (multinomial logistic regression), fits per-action (arm) models for **EPA/WPA**, and serves **Greedy** and **LinUCB** multi-armed bandit recommendations with friendly explanations.
+**
 
+#Inverse reinforcement learning analysis on 4th down decisions across the league. Decodes features optimized by coaches while making 4th down decisions.
 **Python 3.9–3.12 recommended.**
 
 ---
@@ -32,7 +33,7 @@ It builds recent team features from play-by-play, trains a **behavior policy** (
 ├── data_clean_2016_2024.ipynb     # pulls PBP via nfl_data_py (nflverse) + feature build
 ├── behavior_2016_2024_epa.ipynb   # behavior policy + Greedy/LinUCB + EPA arm models
 ├── behavior_2016_2024_wpa.ipynb   # behavior policy + Greedy/LinUCB + WPA arm models
-|__ IRL.ipynb                      # reward function model for coaches in NFL
+|__ IRL.ipynb                      # reward function model for coaches in NFL, execute after behavior_2016_2024_epa.ipynb
 └── README.md
 ```
 
