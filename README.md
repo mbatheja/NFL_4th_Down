@@ -1,190 +1,67 @@
-# 4th-Down Decision Calculator
-
-A reproducible pipeline + Streamlit app for **NFL 4th-down decisions**.  
-It builds recent team features from play-by-play, trains a **behavior policy** (multinomial logistic regression), fits per-action (arm) models for **EPA/WPA**, and serves **Greedy** and **LinUCB** multi-armed bandit recommendations with friendly explanations.
-**
-
-#Inverse reinforcement learning analysis on 4th down decisions across the league. Decodes features optimized by coaches while making 4th down decisions.
-**Python 3.9–3.12 recommended.**
-
+# NFL Decision Optimization & Coaching Behavior Analysis
+This project features an Inverse Reinforcement Learning (IRL) framework designed to decode the underlying reward functions optimized by NFL coaches during 4th-down situations. While the broader project provides analytical recommendations, the IRL component serves as the behavioral benchmark, revealing what coaches actually prioritize in real-world scenarios.
 ---
 
-## Repo Layout
+## Inverse Reinforcement Learning (IRL) & Behavioral Analysis
+The IRL model enables a direct comparison between empirical coaching decisions and analytical optimization. By treating historical decisions as "expert" demonstrations, we decode the situational features that drive NFL decision-making.
 
-```text
+<li> Behavioral Decoding: The model establishes a baseline behavior policy across three primary actions: Go for it, Field Goal, or Punt. </li>
+
+<li> Feature Importance: Analysis reveals that coaches are most heavily influenced by field position and time remaining. Key decoded importance weights include: </li>
+
+Yardline (100-0): 2.036
+
+Seconds Remaining: 0.974
+
+Yards to Go: 0.818
+
+<li> Coaching "Desperation": The model evaluates how features like score_differential and def_time_on_field_cum quantify the game context that shifts a coach toward more aggressive "Go-for-it" behavior. </li>
+
+## Model Evaluation
+Specific evaluations were conducted to validate the IRL model's fidelity to actual NFL behavior:
+
+<li> In-Sample Accuracy: The model achieved an 85.7% accuracy in predicting actual coach decisions based on the decoded reward function. </li>
+
+<li> Action Probabilities: On average, the model correctly mirrors the league's conservative bias, with a baseline punt probability of 55.8% vs. a go probability of 17.8%. </li>
+
+<li> Team-Specific Analysis: Aggressiveness is evaluated by comparing team "Go-for-it" rates against their "Desperation Coefficients," allowing for a nuanced look at which coaches deviate from the league-wide norm. </li>
+
+## Integration with the 4th-Down Decision Calculator
+The IRL analysis is a critical component of a larger 4th-Down Decision Calculator pipeline. This system allows users to compare the "Coach's Choice" (derived from IRL) against "Optimized Choices" (derived from MAB).
+
+<li> Multi-Armed Bandit (MAB): Serves Greedy and LinUCB recommendations optimized for EPA (Expected Points Added) or WPA (Win Probability Added). </li>
+
+<li> Data Pipeline: A reproducible workflow that pulls play-by-play data (2016–2024) and builds situational features like 4-week rolling EPA and FG accuracy. </li>
+
+<li> Streamlit App: A real-time interface where users can input game states to see how an analytical model's recommendation compares to the decoded historical behavior of NFL coaches. </li>
+
+## Contributions
+Inverse Reinforcement Learning and related evaluation: Mahima Batheja
+
+MAB model and data cleaning: Lucas Hyunh
+
+MAB evaluation: Ardak Baizhaxynova
+
+Repo Layout
+```Plaintext
 .
-├── app.py                         # Streamlit UI
-├── artifacts/                     # Trained models + inference code
-│   ├── inference.py               # score_context(), ACTIONS, preprocessor, etc.
-├── behavior_policy.joblib     #Trained Logistic Regression Model
-│   ├── test_infer.py              # quick tests for inference flow
-│   ├── arm_models_epa.joblib      # per-action regressors (EPA)
-│   ├── arm_models_wpa.joblib      # per-action regressors (WPA)
-│   └── META / *.json / *.joblib   # metadata, ColumnTransformer, encoders, etc.
-├── data/                          # CSVs produced by data_clean
-│   ├── pbp_clean_2016_2024.csv
-│   ├── decisions_2016_2024.csv
-│   └── (other 4th-down/metrics/situational CSVs)
-├── team_logos/                    # Team logos for the app (e.g., KC.png)
-├── team_stadiums/                 # Stadium photos (e.g., KC_HOME.png)
-├── demo_det_gb.mov                # Short screen recording demo (DET @ GB)
-├── NFL.png                        # header logo for UI
-├── field_diagram.png              # yardline helper image
-├── data_clean_2016_2024.ipynb     # pulls PBP via nfl_data_py (nflverse) + feature build
-├── behavior_2016_2024_epa.ipynb   # behavior policy + Greedy/LinUCB + EPA arm models
-├── behavior_2016_2024_wpa.ipynb   # behavior policy + Greedy/LinUCB + WPA arm models
-|__ IRL.ipynb                      # reward function model for coaches in NFL, execute after behavior_2016_2024_epa.ipynb
-└── README.md
+├── IRL.ipynb                  # Reward function model & coaching behavior analysis
+├── app.py                     # Streamlit UI for the Decision Calculator
+├── artifacts/                 # Trained models (Behavioral policy & MAB arm models)
+├── data/                      # Cleaned PBP and decision CSVs (2016-2024)
+├── behavior_*.ipynb           # MAB training and OPE evaluation notebooks
+└── data_clean_2016_2024.ipynb # Feature engineering and data cleaning pipeline
 ```
-
----
-
 ## Installation
-
-```bash
-python -m venv .venv
-source .venv/bin/activate      # Windows: .venv\Scripts\activate
-pip install -U pip
-
-# core deps
-pip install streamlit pandas numpy scikit-learn scipy joblib matplotlib
-pip install nfl_data_py        # pulls play-by-play from nflverse
+```Bash
+# Recommended Python 3.9–3.12
+pip install streamlit pandas numpy scikit-learn scipy joblib matplotlib nfl_data_py
+Workflow
 ```
+Data Build: Run data_clean_2016_2024.ipynb to generate the situational dataset.
 
----
+MAB Training: Execute behavior_2016_2024_epa.ipynb to train the recommendation models.
 
-## Workflow (End-to-End)
+IRL Analysis: Run IRL.ipynb to perform the coaching behavior decoding and evaluation.
 
-### 1) Data clean & feature build → `data_clean_2016_2024.ipynb`
-
-- Pulls play-by-play from **nfl_data_py** (nflverse).
-- Builds features:
-  - Offense/Defense EPA 4-week rolling (`off_epa_4w`, `def_epa_4w`)
-  - FG accuracy by distance bands (short/mid/long) with a shifted 16-game lookback
-  - Punt net (4-week) `punt_net_4w` using snap yardline & next receiving snap  
-    ```
-    net = yardline_100 at punt + yardline_100 on next receiving snap − 100
-    ```
-    Then apply a team-shifted 4-week rolling mean.
-  - Drive/fatigue context (`plays_in_drive_so_far`, `def_time_on_field_cum/share`, etc.)
-
-- Writes:
-  - `data/pbp_clean_2016_2024.csv`
-  - `data/decisions_2016_2024.csv`
-
----
-
-### 2) Behavior policy & arm models
-
-Run both notebooks:
-
-- `behavior_2016_2024_epa.ipynb`
-- `behavior_2016_2024_wpa.ipynb`
-
-These will:
-
-- Train a multinomial **LogisticRegression** behavior policy \( P_b(a \mid x) \) and report accuracy.
-- Fit per-action **Ridge** regressors (arm models) for **EPA** or **WPA**.
-- Evaluate **Greedy** (argmax μ̂) and **LinUCB** (plus ε-greedy) with Off-Policy Evaluation (**DR/IPS/ESS** + bootstrap CIs).
-- Dump artifacts to `artifacts/`:
-  - `arm_models_epa.joblib`, `arm_models_wpa.joblib`
-  - Preprocessor + META **JSONs/joblibs**
-
-## Bandit Formulas
-
-- **Greedy Policy**  
-  `a_t = argmax_a μ̂(x_t, a)`
-
-- **ε-Greedy Policy**  
-  ```
-  a_t =
-    argmax_a μ̂(x_t, a)    with probability 1-ε
-    random action          with probability ε
-  ```
-
-- **LinUCB (per-action confidence bound)**  
-  `a_t = argmax_a ( μ̂(x_t, a) + α * sqrt(x_t^T A_a^(-1) x_t) )`
-
-  where:  
-  - `A_a` is the regularized design matrix for arm a  
-  - `μ̂(x_t, a)` is the predicted reward  
-  - `α` tunes exploration
-
----
-
-### 3) Sanity-check inference (optional)
-
-```bash
-python artifacts/test_infer.py
-# or
-python -m artifacts.test_infer
-```
-
----
-
-### 4) Run the app
-
-```bash
-streamlit run app.py
-```
-
-The app loads artifacts from `artifacts/` and team-week aggregates from `data/decisions_2016_2024.csv`.
-
-A quick demo has been provided under demo_det_gb.mov
-
----
-
-## App Features (`app.py`)
-
-- **Teams & possession pickers** with team logos from `team_logos/`.
-- **Stadium auto-mapping**: home team → roof/surface defaults (editable; stadium name shown).
-- **Venue & weather**: dome-aware defaults for temperature/wind.
-- **Situation inputs**: quarter/time, yardline helper diagram, yards-to-go, scores, timeouts.
-- **Auto-filled recent metrics** (from `decisions_2016_2024.csv`):
-  - `off_epa_4w`, `def_epa_4w`
-  - FG% short/mid/long
-  - Punt net yards (4-week avg)
-- **Recommendation box**:
-  - Optimize for **WPA** or **EPA**
-  - Shows **Greedy** pick with deltas vs alternatives
-  - Flags **infeasible** actions
-
----
-
-## What the Folders Contain
-
-- **`data_clean_2016_2024.ipynb`** — pulls PBP via `nfl_data_py`, builds features; writes CSVs under `data/`.
-- **`behavior_*.ipynb`** — run Greedy & LinUCB evaluations, train the behavior policy (logistic regression), and fit/store arm models for EPA/WPA.
-- **`artifacts/`** — model artifacts & code used by the app:
-  - `inference.py` (exports `score_context()`)
-  - `test_infer.py`
-  - `arm_models_epa.joblib`, `arm_models_wpa.joblib`
-  - Preprocessor/META joblibs/JSONs
-- **`data/`** — CSVs for all 4th-down plays, decisions, advanced metrics, situational info, etc.
-- **`team_logos/`** — PNGs (named by team abbr, e.g., `KC.png`) for the Streamlit UI.
-
----
-
-## Minimal Requirements (`requirements.txt`)
-
-```
-streamlit
-pandas
-numpy
-scikit-learn
-scipy
-joblib
-matplotlib
-nfl_data_py
-```
-
-Install with:
-
-```bash
-pip install -r requirements.txt
-```
-
-### Inverse Reinforcement Learning
-Run notebook
-- `IRL.ipynb`
-
+Launch App: Use streamlit run app.py to compare analytical vs. empirical decisions.
