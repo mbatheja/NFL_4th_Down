@@ -43,6 +43,7 @@ MAB model and data cleaning: Lucas Hyunh
 MAB evaluation: Ardak Baizhaxynova
 
 ## Repo Layout
+
 ```Plaintext
 .
 ├── IRL.ipynb                  # Reward function model & coaching behavior analysis
