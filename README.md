@@ -35,13 +35,6 @@ The IRL analysis is a critical component of a larger 4th-Down Decision Calculato
 
 <li> Streamlit App: A real-time interface where users can input game states to see how an analytical model's recommendation compares to the decoded historical behavior of NFL coaches. </li>
 
-## Contributions
-Inverse Reinforcement Learning and related evaluation: Mahima Batheja
-
-MAB model and data cleaning: Lucas Hyunh
-
-MAB evaluation: Ardak Baizhaxynova
-
 ## Repo Layout
 
 ```Plaintext
@@ -60,6 +53,15 @@ pip install streamlit pandas numpy scikit-learn scipy joblib matplotlib nfl_data
 Workflow
 ```
 Data Build: Run data_clean_2016_2024.ipynb to generate the situational dataset.
+
+## Contributors
+Inverse Reinforcement Learning and related evaluation: Mahima Batheja
+
+MAB model and data cleaning: Lucas Hyunh
+
+MAB evaluation: Ardak Baizhaxynova
+
+Documentation: Mburu Kagiri
 
 MAB Training: Execute behavior_2016_2024_epa.ipynb to train the recommendation models.
 
