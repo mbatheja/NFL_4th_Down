@@ -54,6 +54,12 @@ Workflow
 ```
 Data Build: Run data_clean_2016_2024.ipynb to generate the situational dataset.
 
+MAB Training: Execute behavior_2016_2024_epa.ipynb to train the recommendation models.
+
+IRL Analysis: Run IRL.ipynb to perform the coaching behavior decoding and evaluation.
+
+Launch App: Use streamlit run app.py to compare analytical vs. empirical decisions.
+
 ## Contributors
 Inverse Reinforcement Learning and related evaluation: Mahima Batheja
 
@@ -62,9 +68,3 @@ MAB model and data cleaning: Lucas Hyunh
 MAB evaluation: Ardak Baizhaxynova
 
 Documentation: Mburu Kagiri
-
-MAB Training: Execute behavior_2016_2024_epa.ipynb to train the recommendation models.
-
-IRL Analysis: Run IRL.ipynb to perform the coaching behavior decoding and evaluation.
-
-Launch App: Use streamlit run app.py to compare analytical vs. empirical decisions.
