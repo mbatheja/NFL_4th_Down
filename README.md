@@ -1,6 +1,5 @@
 # NFL Decision Optimization & Coaching Behavior Analysis
 This project features an Inverse Reinforcement Learning (IRL) framework designed to decode the underlying reward functions optimized by NFL coaches during 4th-down situations. While the broader project provides analytical recommendations, the IRL component serves as the behavioral benchmark, revealing what coaches actually prioritize in real-world scenarios.
----
 
 ## Inverse Reinforcement Learning (IRL) & Behavioral Analysis
 The IRL model enables a direct comparison between empirical coaching decisions and analytical optimization. By treating historical decisions as "expert" demonstrations, we decode the situational features that drive NFL decision-making.
