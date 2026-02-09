@@ -48,8 +48,7 @@ The IRL analysis is a critical component of a larger 4th-Down Decision Calculato
 ## Installation
 ```Bash
 # Recommended Python 3.9–3.12
-pip install streamlit pandas numpy scikit-learn scipy joblib matplotlib nfl_data_py
-Workflow
+pip install -r requirements.txt
 ```
 Data Build: Run data_clean_2016_2024.ipynb to generate the situational dataset.
 
